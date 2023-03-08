@@ -1,0 +1,1 @@
+WORKING2 is a working sketch that can be uploaded to the teensey by the LED strip to demo getting serial data from the esp8266 attached to the teensey
