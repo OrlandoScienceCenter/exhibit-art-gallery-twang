@@ -14,6 +14,12 @@
 
 #include <BMI160Gen.h>
  
+// Uncomment this to enable serial and debug printouts
+#define DEBUG_MODE_ON
+
+// Uncomment this to enable printouts about packet send status with ESP-NOW
+#define DEBUG_NETWORK_ON
+
 // Accel info
 const int select_pin = 10;
 const int i2c_addr = 0x69;
@@ -37,35 +43,53 @@ typedef struct struct_message
 } 
 struct_message;
 
-// Create a struct_message called myData
-struct_message myData;
+// Create a struct_message called accelGyroData
+struct_message accelGyroData;
 
 unsigned long lastTime = 0;  
 unsigned long timerDelay = 100;  // send readings timer
 
 // Callback when data is sent
 void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus) {
-  Serial.print("Last Packet Send Status: ");
-  if (sendStatus == 0){
-    Serial.println("Delivery success");
-  }
-  else{
-    Serial.println("Delivery fail");
-  }
+  
+  #ifdef DEBUG_NETWORK_ON
+  
+    Serial.print(F("Last Packet Send Status: "));
+    if (sendStatus == 0)
+    {
+      Serial.println(F("Delivery success"));
+    }
+    else
+    {
+      Serial.println(F("Delivery fail"));
+    }
+
+    Serial.println();
+    Serial.println();
+
+  #endif
+
 }
  
-void setup() {
+void setup() 
+{
   // Init Serial Monitor
   Serial.begin(115200);
- 
+
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
 
   pinMode(D4, INPUT_PULLUP);
 
   // Init ESP-NOW
-  if (esp_now_init() != 0) {
-    Serial.println("Error initializing ESP-NOW");
+  if (esp_now_init() != 0) 
+  {
+    #ifdef DEBUG_MODE_ON
+
+      Serial.println("Error initializing ESP-NOW");
+    
+    #endif
+
     return;
   }
 
@@ -81,29 +105,122 @@ void setup() {
   BMI160.begin(BMI160GenClass::I2C_MODE, i2c_addr);
 }
  
-void loop() {
-  if ((millis() - lastTime) > timerDelay) {
+void loop() 
+{
+  if ((millis() - lastTime) > timerDelay) 
+  {  
+    loadAccelGyroData();
 
-    int gx, gy, gz;         // raw gyro values
-    int ax, ay, az;         // raw accel values
-  
-    // read raw gyro measurements from device
-    BMI160.readGyro(gx, gy, gz);
-    BMI160.readAccelerometer(ax, ay, az);
-    
-    myData.gx = gx;
-    myData.gy = gy;
-    myData.gz = gz;
+    // Uncomment this to erase what's in accelGyroData and replace it with mock values for testing
+    //loadMockAccelGyroData();
 
-    myData.ax = ax;
-    myData.ay = ay;
-    myData.az = az;
+    modifyAccelGyroData();
 
-    myData.buttonPressed = !digitalRead(D4);
+    sendAccelGyroDataOverEspNow();
 
-    // Send message via ESP-NOW
-    esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
+    #ifdef DEBUG_MODE_ON
+
+      debugAccelerometerValuesReadout();
+
+    #endif
 
     lastTime = millis();
   }
+}
+
+void loadAccelGyroData()
+{
+  // read raw gyro measurements from device
+  BMI160.readGyro(accelGyroData.gx, accelGyroData.gy, accelGyroData.gz);
+
+  BMI160.readAccelerometer(accelGyroData.ax, accelGyroData.ay, accelGyroData.az);
+  
+  accelGyroData.buttonPressed = !digitalRead(D4);
+}
+
+void loadMockAccelGyroData()
+{
+  accelGyroData.ax = 0;
+  accelGyroData.ay = 0;
+  accelGyroData.az = 0;
+
+  accelGyroData.gx = 0;
+  accelGyroData.gy = 0;
+  accelGyroData.gz = 0;
+  
+  accelGyroData.buttonPressed = false;
+
+  // accelGyroData.ax = 0;
+  // accelGyroData.ay = 0;
+  // accelGyroData.az = 0;
+
+  // accelGyroData.gx = 0;
+  // accelGyroData.gy = 0;
+  // accelGyroData.gz = 0;
+}
+
+void modifyAccelGyroData()
+{
+  accelGyroData.ax = map(accelGyroData.ax, -17000, 17000, 0, 50);
+  accelGyroData.ay = map(accelGyroData.ay, -17000, 17000, 50, 0);
+  accelGyroData.az = map(accelGyroData.az, -17000, 17000, 0, 50);
+
+  // These will obviously override the above rows
+  // accelGyroData.ax = 0;
+  // accelGyroData.ay = 0;
+  // accelGyroData.az = 0;
+  
+  accelGyroData.gx = map(accelGyroData.gx, -17000, 17000, 0, 50);
+  accelGyroData.gy = map(accelGyroData.gy, -17000, 17000, 0, 50);
+  accelGyroData.gz = map(accelGyroData.gz, -17000, 17000, 0, 50);
+
+  // These will obviously override the above rows
+  // accelGyroData.gx = 0;
+  // accelGyroData.gy = 0;
+  // accelGyroData.gz = 0;
+}
+
+void sendAccelGyroDataOverEspNow()
+{
+  // Send message via ESP-NOW
+  esp_now_send(broadcastAddress, (uint8_t *) &accelGyroData, sizeof(accelGyroData));
+}
+
+void debugAccelerometerValuesReadout()
+{
+  #ifdef DEBUG_MODE_ON
+
+    // Accel readouts
+    Serial.print(F("aX: "));
+    Serial.print(accelGyroData.ax);
+    Serial.print(F(", "));
+
+    Serial.print(F("aY: "));
+    Serial.print(accelGyroData.ay);
+    Serial.print(F(", "));
+
+    Serial.print(F("aZ: "));
+    Serial.println(accelGyroData.az);
+
+    // Gyro readouts
+    Serial.print(F("gX: "));
+    Serial.print(accelGyroData.gx);
+    Serial.print(F(", "));
+
+    Serial.print(F("gY: "));
+    Serial.print(accelGyroData.gy);
+    Serial.print(F(", "));
+
+    Serial.print(F("gZ: "));
+    Serial.println(accelGyroData.gz);
+
+    // Button readout
+    
+    Serial.print(F("Button: "));
+    Serial.println(accelGyroData.buttonPressed);
+    
+    Serial.println();
+    Serial.println();
+
+  #endif
 }
