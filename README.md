@@ -1,11 +1,8 @@
 # Board mac addresses
+ 
+Attached to LED strip: 40:22:D8:EA:1F:98
+Sender in pedestal:  40:22:D8:EA:4B:E8
 
-* Accelerometer data server ESP8266: B4:E6:2D:53:D5:79
-* ESP8266 that communicates with the trinket that drives the LED strip: A0:20:A6:18:4E:3F
-
-
-NEW-32s: 
-    Attached to LED strip: 40:22:D8:EA:1F:98
 
 # Wiring:
 
