@@ -44,10 +44,10 @@ bool resetButtonStatus = false;
 #endif 
 
 // LED setup
-#define NUM_LEDS             692  // Will not show a blue dot at 693 or greater. Wat.
+#define NUM_LEDS             692    // Will not show a blue dot at 693 or greater. Wat.
 
-#define DATA_PIN 13   // Green wire through resistor       (GPIO D33 on ESP32)
-#define CLOCK_PIN 14  // Yellow wire through resistor      (GPIO D25 on ESP32)
+#define DATA_PIN 13                 // Green wire through resistor       (GPIO D13 on ESP32)
+#define CLOCK_PIN 14                // Yellow wire through resistor      (GPIO D14 on ESP32)
 
 #define LED_COLOR_ORDER      BGR   
 #define BRIGHTNESS           150
@@ -70,19 +70,19 @@ long lastInputTime = 0;
 iSin isin = iSin();
 
 // JOYSTICK
-#define JOYSTICK_ORIENTATION 0     // 0, 1 or 2 to set the angle of the joystick
-#define JOYSTICK_DIRECTION   0     // 0/1 to flip joystick direction
-#define ATTACK_THRESHOLD     9000 // The threshold that triggers an attack
+#define JOYSTICK_ORIENTATION 0      // 0, 1 or 2 to set the angle of the joystick
+#define JOYSTICK_DIRECTION   0      // 0/1 to flip joystick direction
+#define ATTACK_THRESHOLD     9000   // The threshold that triggers an attack
 #define JOYSTICK_DEADZONE    10     // Angle to ignore
 
-int joystickTilt = 0;              // Stores the angle of the joystick
-int joystickWobble = 0;            // Stores the max amount of acceleration (wobble)
+int joystickTilt = 0;               // Stores the angle of the joystick
+int joystickWobble = 0;             // Stores the max amount of acceleration (wobble)
 
 // WOBBLE ATTACK
 #define ATTACK_WIDTH        140     // Width of the wobble attack, world is 1000 wide
-#define ATTACK_DURATION     500    // Duration of a wobble attack (ms)
-long attackMillis = 0;             // Time the attack started
-bool attacking = 0;                // Is the attack in progress?
+#define ATTACK_DURATION     500     // Duration of a wobble attack (ms)
+long attackMillis = 0;              // Time the attack started
+bool attacking = 0;                 // Is the attack in progress?
 #define BOSS_WIDTH          40
 
 // PLAYER
