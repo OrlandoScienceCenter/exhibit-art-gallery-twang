@@ -17,7 +17,7 @@
 #include "Conveyor.h"
 
 // ESP-NOW stuff
-#define DEBUG_MODE_ON       // Comment this out for no debug serial messages
+//#define DEBUG_MODE_ON       // Comment this out for no debug serial messages
 
 typedef struct structEspNowPacket                                           // Structure example to send data, must match the sender structure
 {
@@ -53,7 +53,7 @@ bool resetButtonStatus = false;
 #define BRIGHTNESS           150
 #define DIRECTION            0      // 0 = right to left, 1 = left to right
 
-#define MIN_REDRAW_INTERVAL  16     // Min redraw interval (ms) 33 = 30fps / 16 = 63fps
+#define MIN_REDRAW_INTERVAL  33     // Min redraw interval (ms) 33 = 30fps / 16 = 63fps
 #define USE_GRAVITY          0      // 0/1 use gravity (LED strip going up wall)
 #define BEND_POINT           0      // 0/1000 point at which the LED strip goes up the wall
 #define LED_TYPE             APA102 // type of LED strip to use(APA102 - DotStar, WS2811 - NeoPixel)
@@ -73,7 +73,7 @@ iSin isin = iSin();
 #define JOYSTICK_ORIENTATION 0     // 0, 1 or 2 to set the angle of the joystick
 #define JOYSTICK_DIRECTION   0     // 0/1 to flip joystick direction
 #define ATTACK_THRESHOLD     9000 // The threshold that triggers an attack
-#define JOYSTICK_DEADZONE    12     // Angle to ignore
+#define JOYSTICK_DEADZONE    10     // Angle to ignore
 
 int joystickTilt = 0;              // Stores the angle of the joystick
 int joystickWobble = 0;            // Stores the max amount of acceleration (wobble)
@@ -93,7 +93,7 @@ int playerPosition;                // Stores the player position
 int playerPositionModifier;        // +/- adjustment to player position
 bool playerAlive;
 long killTime;
-int lives = 2;
+int lives = 3;
 
 // POOLS
 int lifeLEDs[3] = {52, 50, 40};
@@ -515,7 +515,7 @@ void levelComplete(){
     stageStartTime = millis();
     stage = "WIN";
     if(levelNumber == LEVEL_COUNT) stage = "COMPLETE";
-    lives = 2;
+    lives = 3;
     updateLives();
 }
 
