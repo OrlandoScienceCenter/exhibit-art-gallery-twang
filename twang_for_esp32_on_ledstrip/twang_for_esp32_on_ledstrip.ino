@@ -1,6 +1,9 @@
 // Required libs
 #include "FastLED.h"
 #include "Wire.h"
+#include <WiFi.h>
+#include <esp_now.h>
+
 //#include "toneAC.h"
 #include "iSin.h"
 #include "RunningMedian.h"
@@ -13,7 +16,32 @@
 #include "Boss.h"
 #include "Conveyor.h"
 
+// ESP-NOW stuff
 #define DEBUG_MODE_ON       false
+
+typedef struct structEspNowPacket                                           // Structure example to send data, must match the sender structure
+{
+  int joystickAveragedTilt;
+  int joystickPeakWobble;
+
+  bool buttonPressed = false;
+} 
+structEspNowPacket;
+
+structEspNowPacket pedestalData;                               // Create a structEspNowPacket called pedestalData to deserialize the incoming packet from the sender over esp-now
+
+uint8_t packetLength;
+
+bool ledState = false;
+
+bool resetButtonStatus = false;
+
+#ifdef DEBUG_MODE_ON
+
+  unsigned long lastTime = 0;  
+  unsigned long timerDelay = 1000;                             // send readings timer
+
+#endif 
 
 // LED setup
 #define NUM_LEDS             692  // Will not show a blue dot at 693 or greater. Wat.
@@ -99,6 +127,27 @@ RunningMedian MPUWobbleSamples = RunningMedian(5);
 // char incomingSerialLine[50];
 // int readPos = 0;
 
+void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len)      // Callback function that will be executed when data is received
+{
+  memcpy(&pedestalData, incomingData, sizeof(pedestalData));
+
+  toggleBuiltInLed();
+
+  packetLength = len;
+
+  joystickTilt = pedestalData.joystickAveragedTilt;
+
+  joystickWobble = pedestalData.joystickPeakWobble;
+
+  resetButtonStatus = pedestalData.buttonPressed;
+
+  #ifdef DEBUG_MODE_ON
+  
+    debugPrintToSerialJoystickValues();
+
+  #endif
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -116,6 +165,8 @@ void setup()
         pinMode(lifeLEDs[i], OUTPUT);
         digitalWrite(lifeLEDs[i], HIGH);
     }
+
+    initializeEspNow();
 
     Serial.println(F("Init v113, bout to load level."));
     
@@ -137,6 +188,7 @@ void loop()
         SFXdead();
     }
     */
+
     if (mm - previousMillis >= MIN_REDRAW_INTERVAL) {
         
         getInput();
@@ -144,6 +196,13 @@ void loop()
         long frameTimer = mm;
         previousMillis = mm;
         
+        if (resetButtonStatus)
+        {
+          stage = "DEAD";
+          
+          resetButtonStatus = false;
+        }
+
         if(abs(joystickWobble) > JOYSTICK_DEADZONE){
             lastInputTime = mm;
             if(stage == "SCREENSAVER"){
@@ -280,8 +339,48 @@ void loop()
         FastLED.show();
 //        Serial.println(millis()-mm);
     }
+}
 
+void debugPrintToSerialJoystickValues()
+{
+  Serial.println();
+  Serial.println();
+
+  Serial.print(F("Bytes received: "));
+  Serial.println(packetLength);
+
+  Serial.print(F("Tilt from pedestal: "));
+  Serial.print(pedestalData.joystickAveragedTilt);
+
+  Serial.print(F(", peak recent wobble value from pedestal: "));
+  Serial.print(pedestalData.joystickPeakWobble);
+  
+  Serial.print(F(", button state: "));
+  Serial.println(pedestalData.buttonPressed);
+}
      
+void initializeEspNow()
+{
+  WiFi.mode(WIFI_STA);
+
+  // Init ESP-NOW
+  if (esp_now_init() != 0) {
+    Serial.println(F("Error initializing ESP-NOW"));
+    return;
+  }
+  
+  // Once ESPNow is successfully Init, register for recieve callback to get recieved packet
+  //esp_now_set_self_role(ESP_NOW_ROLE_SLAVE);
+  esp_now_register_recv_cb(OnDataRecv);
+}
+
+void toggleBuiltInLed()
+{
+  //digitalWrite(LED_BUILTIN, ledState);
+  
+  ledState = !ledState;
+}
+
   // int incomingByte;
   // int currentPos = 0;
 
@@ -325,7 +424,7 @@ void loop()
   //     incomingSerialLine[i] = '\0';
   //   }
   //} 
-}
+// }
 
 // void setJoystickTilt()
 // {
