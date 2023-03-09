@@ -20,7 +20,7 @@
 
 #define DATA_PIN             13
 #define CLOCK_PIN            11
-#define LED_COLOR_ORDER      BGR //Try BGR or GBR
+#define LED_COLOR_ORDER      BGR    //Try BGR or GBR
 #define BRIGHTNESS           150
 #define DIRECTION            1      // 0 = right to left, 1 = left to right
 
@@ -91,17 +91,19 @@ int const conveyorCount = 2;
 Boss boss = Boss();
 
 CRGB leds[NUM_LEDS];
+
 RunningMedian MPUAngleSamples = RunningMedian(5);
 RunningMedian MPUWobbleSamples = RunningMedian(5);
 
-char incomingSerialLine[50];
-int readPos = 0;
+// char incomingSerialLine[50];
+// int readPos = 0;
 
-void setup() {
+void setup()
+{
     Serial.begin(115200);
 
     // From wemos D1 mini
-    Serial3.begin(9600);
+    //Serial3.begin(9600);
     
     // Fast LED
     FastLED.addLeds<LED_TYPE, DATA_PIN, CLOCK_PIN, LED_COLOR_ORDER>(leds, NUM_LEDS);
@@ -119,7 +121,8 @@ void setup() {
     loadLevel();
 }
 
-void loop() {
+void loop()
+{
     long mm = millis();
     int brightness = 0;
     /*
@@ -202,20 +205,32 @@ void loop() {
         }else if(stage == "WIN"){
             // LEVEL COMPLETE
             FastLED.clear();
-            if(stageStartTime+500 > mm){
-                int n = max(map(((mm-stageStartTime)), 0, 500, NUM_LEDS, 0), 0);
-                for(int i = NUM_LEDS; i>= n; i--){
+            if(stageStartTime+500 > mm)
+            {
+                int mappedStageStartTime = map(((mm-stageStartTime)), 0, 500, NUM_LEDS, 0);
+                int n = max(mappedStageStartTime, 0);
+
+                for(int i = NUM_LEDS; i>= n; i--)
+                {
                     brightness = 255;
                     leds[i] = CRGB(0, brightness, 0);
                 }
+
                 //SFXwin();
-            }else if(stageStartTime+1000 > mm){
-                int n = max(map(((mm-stageStartTime)), 500, 1000, NUM_LEDS, 0), 0);
-                for(int i = 0; i< n; i++){
+            }
+            else if(stageStartTime+1000 > mm)
+            {
+                int mappedStageStartTime = map(((mm-stageStartTime)), 500, 1000, NUM_LEDS, 0);
+                int n = max(mappedStageStartTime, 0);
+            
+                for(int i = 0; i< n; i++)
+                {
                     brightness = 255;
                     leds[i] = CRGB(0, brightness, 0);
                 }
+
                 //SFXwin();
+
             }else if(stageStartTime+1200 > mm){
                 leds[0] = CRGB(0, 255, 0);
             }else{
@@ -224,9 +239,13 @@ void loop() {
         }else if(stage == "COMPLETE"){
             FastLED.clear();
             //SFXcomplete();
-            if(stageStartTime+500 > mm){
-                int n = max(map(((mm-stageStartTime)), 0, 500, NUM_LEDS, 0), 0);
-                for(int i = NUM_LEDS; i>= n; i--){
+            if(stageStartTime+500 > mm)
+            {
+                int mappedStageStartTime = map(((mm-stageStartTime)), 0, 500, NUM_LEDS, 0);
+                int n = max(mappedStageStartTime, 0);
+
+                for(int i = NUM_LEDS; i>= n; i--)
+                {
                     brightness = (sin(((i*10)+mm)/500.0)+1)*255;
                     leds[i].setHSV(brightness, 255, 50);
                 }
@@ -235,9 +254,13 @@ void loop() {
                     brightness = (sin(((i*10)+mm)/500.0)+1)*255;
                     leds[i].setHSV(brightness, 255, 50);
                 }
-            }else if(stageStartTime+5500 > mm){
-                int n = max(map(((mm-stageStartTime)), 5000, 5500, NUM_LEDS, 0), 0);
-                for(int i = 0; i< n; i++){
+            }else if(stageStartTime+5500 > mm)
+            {
+                int mappedStageStartTime = map(((mm-stageStartTime)), 5000, 5500, NUM_LEDS, 0);
+                int n = max(mappedStageStartTime, 0);
+              
+                for(int i = 0; i< n; i++)
+                {
                     brightness = (sin(((i*10)+mm)/500.0)+1)*255;
                     leds[i].setHSV(brightness, 255, 50);
                 }
@@ -258,159 +281,159 @@ void loop() {
     }
 
      
-  int incomingByte;
-  int currentPos = 0;
+  // int incomingByte;
+  // int currentPos = 0;
 
-  if (Serial3.available() > 0)
-  {
-    delay(50);
+  // if (Serial3.available() > 0)
+  // {
+  //   delay(50);
     
-    while (Serial3.available() > 0) 
-    {
-      incomingByte = Serial3.read();
+  //   while (Serial3.available() > 0) 
+  //   {
+  //     incomingByte = Serial3.read();
   
-      char incomingChar = char(incomingByte);
+  //     char incomingChar = char(incomingByte);
   
-      incomingSerialLine[currentPos] = incomingChar;
+  //     incomingSerialLine[currentPos] = incomingChar;
       
-      currentPos++;
+  //     currentPos++;
         
-      if (incomingChar == '.')
-      {
-        incomingSerialLine[currentPos] = '\0';
+  //     if (incomingChar == '.')
+  //     {
+  //       incomingSerialLine[currentPos] = '\0';
         
-        break;
-      }
-    }
+  //       break;
+  //     }
+  //   }
 
 
-    if (DEBUG_MODE_ON)
-    {
-      Serial.println();
-      Serial.println();
+  //   if (DEBUG_MODE_ON)
+  //   {
+  //     Serial.println();
+  //     Serial.println();
   
-      Serial.print("incomingSerialLine: ");
-      Serial.println(incomingSerialLine);
-    }
+  //     Serial.print("incomingSerialLine: ");
+  //     Serial.println(incomingSerialLine);
+  //   }
      
-    setJoystickTilt();
-    setJoystickWobble();
+  //   setJoystickTilt();
+  //   setJoystickWobble();
 
-    for (int i = 0; i < sizeof(incomingSerialLine); i++)
-    {
-      incomingSerialLine[i] = '\0';
-    }
-  } 
+  //   for (int i = 0; i < sizeof(incomingSerialLine); i++)
+  //   {
+  //     incomingSerialLine[i] = '\0';
+  //   }
+  //} 
 }
 
-void setJoystickTilt()
-{
-    char tiltString[50];
+// void setJoystickTilt()
+// {
+//     char tiltString[50];
 
-    int tiltStringCheckPos = 0;
+//     int tiltStringCheckPos = 0;
 
-    int tiltStringSavePos = 0;
+//     int tiltStringSavePos = 0;
   
-    while (char(incomingSerialLine[tiltStringCheckPos]) != 't')
-    {
-      tiltStringCheckPos++;
-    }
+//     while (char(incomingSerialLine[tiltStringCheckPos]) != 't')
+//     {
+//       tiltStringCheckPos++;
+//     }
     
-    tiltStringCheckPos++;
+//     tiltStringCheckPos++;
 
 
-    if (DEBUG_MODE_ON)
-    {
-      Serial.print("First char is: ");
-      Serial.println(incomingSerialLine[tiltStringCheckPos]);
-    }
+//     if (DEBUG_MODE_ON)
+//     {
+//       Serial.print("First char is: ");
+//       Serial.println(incomingSerialLine[tiltStringCheckPos]);
+//     }
     
-    // Now wobbleStringCheckPos should be at the letter after 't'
-    while (isDigit(incomingSerialLine[tiltStringCheckPos]))
-    {
+//     // Now wobbleStringCheckPos should be at the letter after 't'
+//     while (isDigit(incomingSerialLine[tiltStringCheckPos]))
+//     {
       
-      if (DEBUG_MODE_ON)
-      {
-        Serial.print("Adding: ");
-        Serial.print(incomingSerialLine[tiltStringCheckPos]);
-      }
+//       if (DEBUG_MODE_ON)
+//       {
+//         Serial.print("Adding: ");
+//         Serial.print(incomingSerialLine[tiltStringCheckPos]);
+//       }
       
-      tiltString[tiltStringSavePos] = incomingSerialLine[tiltStringCheckPos];
+//       tiltString[tiltStringSavePos] = incomingSerialLine[tiltStringCheckPos];
       
-      tiltStringSavePos++;
-      tiltStringCheckPos++;
-    }
+//       tiltStringSavePos++;
+//       tiltStringCheckPos++;
+//     }
     
-    tiltStringSavePos++;
-    tiltString[tiltStringSavePos] = '\0';
+//     tiltStringSavePos++;
+//     tiltString[tiltStringSavePos] = '\0';
 
-//    Serial.print("TiltString: ");
-//    Serial.println(tiltString);
+// //    Serial.print("TiltString: ");
+// //    Serial.println(tiltString);
 
-    joystickTilt = atoi(tiltString);
+//     joystickTilt = atoi(tiltString);
 
 
-    if (DEBUG_MODE_ON)
-    {
-      Serial.print("joystickTilt: ");
-      Serial.println(joystickTilt);
-    }
-}
+//     if (DEBUG_MODE_ON)
+//     {
+//       Serial.print("joystickTilt: ");
+//       Serial.println(joystickTilt);
+//     }
+// }
 
-void setJoystickWobble()
-{
-    char wobbleString[50];
+// void setJoystickWobble()
+// {
+//     char wobbleString[50];
 
-    int wobbleStringCheckPos = 0;
+//     int wobbleStringCheckPos = 0;
 
-    int wobbleStringSavePos = 0;
+//     int wobbleStringSavePos = 0;
   
-    while (char(incomingSerialLine[wobbleStringCheckPos]) != 'w')
-    {
-      wobbleStringCheckPos++;
-    }
+//     while (char(incomingSerialLine[wobbleStringCheckPos]) != 'w')
+//     {
+//       wobbleStringCheckPos++;
+//     }
     
-    wobbleStringCheckPos++;
+//     wobbleStringCheckPos++;
 
 
-    if (DEBUG_MODE_ON)
-    {
-      Serial.print("First char is: ");
-      Serial.println(incomingSerialLine[wobbleStringCheckPos]);
-    }
+//     if (DEBUG_MODE_ON)
+//     {
+//       Serial.print("First char is: ");
+//       Serial.println(incomingSerialLine[wobbleStringCheckPos]);
+//     }
     
-    // Now wobbleStringCheckPos should be at the letter after 't'
-    while (isDigit(incomingSerialLine[wobbleStringCheckPos]))
-    {
+//     // Now wobbleStringCheckPos should be at the letter after 't'
+//     while (isDigit(incomingSerialLine[wobbleStringCheckPos]))
+//     {
       
-      if (DEBUG_MODE_ON)
-      {
-        Serial.print("Adding: ");
-        Serial.print(incomingSerialLine[wobbleStringCheckPos]);
-      }
+//       if (DEBUG_MODE_ON)
+//       {
+//         Serial.print("Adding: ");
+//         Serial.print(incomingSerialLine[wobbleStringCheckPos]);
+//       }
       
-      wobbleString[wobbleStringSavePos] = incomingSerialLine[wobbleStringCheckPos];
+//       wobbleString[wobbleStringSavePos] = incomingSerialLine[wobbleStringCheckPos];
       
-      wobbleStringSavePos++;
-      wobbleStringCheckPos++;
-    }
+//       wobbleStringSavePos++;
+//       wobbleStringCheckPos++;
+//     }
     
-    wobbleStringSavePos++;
-    wobbleString[wobbleStringSavePos] = '\0';
+//     wobbleStringSavePos++;
+//     wobbleString[wobbleStringSavePos] = '\0';
 
-//    Serial.print("wobbleString: ");
-//    Serial.println(wobbleString);
+// //    Serial.print("wobbleString: ");
+// //    Serial.println(wobbleString);
 
-    joystickWobble = atoi(wobbleString);
+//     joystickWobble = atoi(wobbleString);
 
 
-    if (DEBUG_MODE_ON)
-    {
-      Serial.print("joystickwobble: ");
-      Serial.println(joystickWobble);
-    }
+//     if (DEBUG_MODE_ON)
+//     {
+//       Serial.print("joystickwobble: ");
+//       Serial.println(joystickWobble);
+//     }
   
-}
+// }
 
 
 // ---------------------------------
