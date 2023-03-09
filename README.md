@@ -44,6 +44,7 @@ twang4809_teensey_accel_client_with_ledstrip_in_progress
 
 https://github.com/hanyazou/BMI160-Arduino
 https://github.com/RobTillaart/RunningMedian
+https://github.com/FastLED/FastLED
 
 # Accelerometer Values:
 
