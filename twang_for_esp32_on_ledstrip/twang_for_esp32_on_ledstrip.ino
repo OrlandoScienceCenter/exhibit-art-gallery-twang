@@ -53,7 +53,7 @@ bool resetButtonStatus = false;
 #define BRIGHTNESS           150
 #define DIRECTION            0      // 0 = right to left, 1 = left to right
 
-#define MIN_REDRAW_INTERVAL  33     // Min redraw interval (ms) 33 = 30fps / 16 = 63fps
+#define MIN_REDRAW_INTERVAL  20     // Min redraw interval (ms) 33 = 30fps / 16 = 63fps
 #define USE_GRAVITY          0      // 0/1 use gravity (LED strip going up wall)
 #define BEND_POINT           0      // 0/1000 point at which the LED strip goes up the wall
 #define LED_TYPE             APA102 // type of LED strip to use(APA102 - DotStar, WS2811 - NeoPixel)
