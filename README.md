@@ -19,8 +19,6 @@ BMI160 SDA = ESP32 pin D21 (Blue wire on breadboard)   [Green/White from acceler
 BMI160 3v3 = ESP32 pin 3v3 (Yellow wire on breadboard) [Orange from accelerometer]
 BMI160 GND = ESP32 pin Gnd (Black wire on breadboard)  [Orange/White from accelerometer]
 
-
-
 # Folders
 
 basic_readings_working_with_wavgat
