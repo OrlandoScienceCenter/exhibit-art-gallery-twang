@@ -36,7 +36,7 @@
 long previousMillis = 0;           // Time of the last redraw
 int levelNumber = 0;
 long lastInputTime = 0;
-#define TIMEOUT              30000
+#define TIMEOUT              30000 
 #define LEVEL_COUNT          9
 #define MAX_VOLUME           10
 iSin isin = iSin();
