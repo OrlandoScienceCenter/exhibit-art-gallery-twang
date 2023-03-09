@@ -10,14 +10,14 @@
 
 #define PIN_RESET_BUTTON 23
 
-// JOYSTICK
+// JOYSTICKj
 #define JOYSTICK_DIRECTION   0          // 0/1 to flip joystick direction
-#define JOYSTICK_DEADZONE    10          // Angle to ignore
+#define JOYSTICK_DEADZONE    12          // Angle to ignore
 
 #define ACCELEROMETER_I2C_ADDRESS 0x69
 
-RunningMedian MPUAngleSamples = RunningMedian(5);
-RunningMedian MPUWobbleSamples = RunningMedian(5);
+RunningMedian MPUAngleSamples = RunningMedian(8);
+RunningMedian MPUWobbleSamples = RunningMedian(4);
 
 uint8_t broadcastAddress[] = {0x40, 0x22, 0xD8, 0xEA, 0x1F, 0x98};      // RECEIVER New ESP32 attached to LED strip
 
