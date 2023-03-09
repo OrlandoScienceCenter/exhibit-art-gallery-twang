@@ -7,9 +7,6 @@
 // need to define DATA_PIN.  For led chipsets that are SPI based (four wires - data, clock,
 // ground, and power), like the LPD8806 define both DATA_PIN and CLOCK_PIN
 
-#define DATA_PIN 13   // Green wire through resistor       (GPIO D33 on ESP32)
-#define CLOCK_PIN 14  // Yellow wire through resistor      (GPIO D25 on ESP32)
-
 // Define the array of leds
 CRGB leds[NUM_LEDS];
 
