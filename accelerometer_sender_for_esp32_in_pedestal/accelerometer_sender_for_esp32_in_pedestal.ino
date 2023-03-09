@@ -12,12 +12,12 @@
 
 // JOYSTICKj
 #define JOYSTICK_DIRECTION   0          // 0/1 to flip joystick direction
-#define JOYSTICK_DEADZONE    12          // Angle to ignore
+#define JOYSTICK_DEADZONE    10          // Angle to ignore
 
 #define ACCELEROMETER_I2C_ADDRESS 0x69
 
-RunningMedian MPUAngleSamples = RunningMedian(8);
-RunningMedian MPUWobbleSamples = RunningMedian(4);
+RunningMedian MPUAngleSamples = RunningMedian(7);
+RunningMedian MPUWobbleSamples = RunningMedian(5);
 
 uint8_t broadcastAddress[] = {0x40, 0x22, 0xD8, 0xEA, 0x1F, 0x98};      // RECEIVER New ESP32 attached to LED strip
 
@@ -49,7 +49,7 @@ structEspNowPacket pedestalData;                               // Create a struc
 bool resetButtonStatus = false;
 
 unsigned long lastTime = 0;  
-unsigned long timerDelay = 200;                             // send readings timer
+unsigned long timerDelay = 150;                             // send readings timer
 
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)      // Callback when data is sent
 {
