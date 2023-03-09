@@ -11,10 +11,9 @@
 #define PIN_RESET_BUTTON 23
 
 // JOYSTICK
-#define JOYSTICK_ORIENTATION 1          // 0, 1 or 2 to set the angle of the joystick. 0 is ax and gx values, 1 is ay and gy, and 2 is az and gz
+#define JOYSTICK_ORIENTATION 0          // 0, 1 or 2 to set the angle of the joystick. 0 is ax and gx values, 1 is ay and gy, and 2 is az and gz
 #define JOYSTICK_DIRECTION   0          // 0/1 to flip joystick direction
-#define ATTACK_THRESHOLD     30000      // The threshold that triggers an attack
-#define JOYSTICK_DEADZONE    1          // Angle to ignore
+#define JOYSTICK_DEADZONE    5          // Angle to ignore
 
 #define ACCELEROMETER_I2C_ADDRESS 0x69
 
@@ -48,32 +47,25 @@ structEspNowPacket;
 
 structEspNowPacket pedestalData;                               // Create a structEspNowPacket called pedestalData to deserialize the incoming packet from the sender over esp-now
 
+bool resetButtonStatus = false;
+
 unsigned long lastTime = 0;  
-unsigned long timerDelay = 1000;                             // send readings timer
+unsigned long timerDelay = 50;                             // send readings timer
 
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)      // Callback when data is sent
 {
-  char macStr[18];
 
-  Serial.print("Packet to: ");
-  // Copies the sender mac address to a string
-  snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
-           mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-  Serial.print(macStr);
-  Serial.print(" send status:\t");
-  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
-  
   #ifdef DEBUG_NETWORK_ON
-  
-    Serial.print(F("Last Packet Send Status: "));
-    if (sendStatus == 0)
-    {
-      Serial.println(F("Delivery success"));
-    }
-    else
-    {
-      Serial.println(F("Delivery fail"));
-    }
+
+    char macStr[18];
+
+    Serial.print("Packet to: ");
+    // Copies the sender mac address to a string
+    snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
+            mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+    Serial.print(macStr);
+    Serial.print(" send status:\t");
+    Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 
     Serial.println();
     Serial.println();
@@ -98,6 +90,8 @@ void setup()
  
 void loop() 
 {
+  resetButtonStatus = !digitalRead(PIN_RESET_BUTTON);
+
   structImuValues rawImuValues = loadDataFromImu();
 
   #ifdef TEST_MODE_ON
@@ -269,7 +263,7 @@ void setWobblerJoystickInputFromPedestalData(structImuValues mappedImuValues)
 
 void sendPedestalDataOverEspNow()
 {
-  pedestalData.buttonPressed = !digitalRead(PIN_RESET_BUTTON);
+  pedestalData.buttonPressed = resetButtonStatus;
 
   esp_now_send(broadcastAddress, (uint8_t *) &pedestalData, sizeof(pedestalData));
 }
@@ -281,41 +275,42 @@ void debugAccelerometerValuesReadout(structImuValues mappedImuValues)
     // Accel readouts
     Serial.print(F("aX: "));
     Serial.print(mappedImuValues.ax);
-    Serial.print(F(", "));
+    Serial.print(F(",\t"));
 
     Serial.print(F("aY: "));
     Serial.print(mappedImuValues.ay);
-    Serial.print(F(", "));
+    Serial.print(F(",\t"));
 
     Serial.print(F("aZ: "));
-    Serial.println(mappedImuValues.az);
+    Serial.print(mappedImuValues.az);
+
+    Serial.print(F("\t-\t"));
 
     // Gyro readouts
     Serial.print(F("gX: "));
     Serial.print(mappedImuValues.gx);
-    Serial.print(F(", "));
+    Serial.print(F(",\t"));
 
     Serial.print(F("gY: "));
     Serial.print(mappedImuValues.gy);
-    Serial.print(F(", "));
+    Serial.print(F(",\t"));
 
     Serial.print(F("gZ: "));
-    Serial.println(mappedImuValues.gz);
+    Serial.print(mappedImuValues.gz);
+    
+    Serial.print(F("\t-\t"));
 
     // Tilt, wobble
-    Serial.print(F("Averaged joystick tilt: "));
+    Serial.print(F("Avgd tilt: "));
     Serial.print(pedestalData.joystickAveragedTilt);
-    Serial.print(F(", "));
+    Serial.print(F(",\t"));
 
-    Serial.print(F("peak joystick wobble: "));
-    Serial.println(pedestalData.joystickPeakWobble);
+    Serial.print(F("peak wobble: "));
+    Serial.print(pedestalData.joystickPeakWobble);
 
     // Button readout
-    Serial.print(F("Button: "));
-    Serial.println(digitalRead(PIN_RESET_BUTTON));
-    
-    Serial.println();
-    Serial.println();
+    Serial.print(F(",\tbutton: "));
+    Serial.println(resetButtonStatus);
 
   #endif
 }
