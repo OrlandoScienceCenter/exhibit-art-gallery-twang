@@ -4,16 +4,17 @@
 #include "RunningMedian.h"
 #include <BMI160Gen.h>
  
-#define DEBUG_MODE_ON                                                   // Uncomment this to enable serial and debug printouts
-#define DEBUG_NETWORK_ON                                                // Uncomment this to enable printouts about packet send status with ESP-NOW
+//#define TEST_MODE_ON                                                    // Uncomment this to mock IMU values and disable ESP-NOW packet send
+#define DEBUG_MODE_ON                                                     // Uncomment this to enable serial and debug printouts
+//#define DEBUG_NETWORK_ON                                                // Uncomment this to enable printouts about packet send status with ESP-NOW
 
 #define PIN_RESET_BUTTON D4
 
 // JOYSTICK
-#define JOYSTICK_ORIENTATION 1          // 0, 1 or 2 to set the angle of the joystick
-#define JOYSTICK_DIRECTION   1          // 0/1 to flip joystick direction
+#define JOYSTICK_ORIENTATION 1          // 0, 1 or 2 to set the angle of the joystick. 0 is ax and gx values, 1 is ay and gy, and 2 is az and gz
+#define JOYSTICK_DIRECTION   0          // 0/1 to flip joystick direction
 #define ATTACK_THRESHOLD     30000      // The threshold that triggers an attack
-#define JOYSTICK_DEADZONE    5          // Angle to ignore
+#define JOYSTICK_DEADZONE    1          // Angle to ignore
 
 #define ACCELEROMETER_I2C_ADDRESS 0x69
 
@@ -46,7 +47,7 @@ structEspNowPacket;
 structEspNowPacket pedestalData;                               // Create a structEspNowPacket called pedestalData to deserialize the incoming packet from the sender over esp-now
 
 unsigned long lastTime = 0;  
-unsigned long timerDelay = 100;                             // send readings timer
+unsigned long timerDelay = 1000;                             // send readings timer
 
 void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus)      // Callback when data is sent
 {
@@ -78,15 +79,19 @@ void setup()
 
   initializeEspNow();
 
-  // Accel init
-  BMI160.begin(BMI160GenClass::I2C_MODE, ACCELEROMETER_I2C_ADDRESS);
+  #ifndef TEST_MODE_ON
+    // Accel init
+    BMI160.begin(BMI160GenClass::I2C_MODE, ACCELEROMETER_I2C_ADDRESS);
+  #endif
 }
  
 void loop() 
 {
   structImuValues rawImuValues = loadDataFromImu();
 
-  rawImuValues = loadMockDataInstead();                                   // IMPORTANT: Comment this line out if you don't want to use mock data
+  #ifdef TEST_MODE_ON
+    rawImuValues = loadMockDataInstead();                                               // IMPORTANT: COMMENT OUT TEST_MODE_ON at the top of file if you WANT TO USE REAL IMU DATA
+  #endif
 
   structImuValues mappedImuValues = mapRawImuValues(rawImuValues);
 
@@ -94,7 +99,9 @@ void loop()
 
   if ((millis() - lastTime) > timerDelay) 
   {  
-    sendPedestalDataOverEspNow();
+    #ifndef TEST_MODE_ON
+      sendPedestalDataOverEspNow();
+    #endif
 
     #ifdef DEBUG_MODE_ON
 
@@ -116,6 +123,40 @@ structImuValues loadDataFromImu()
   BMI160.readAccelerometer(rawImuValues.ax, rawImuValues.ay, rawImuValues.az);
 
   return rawImuValues;
+}
+
+structImuValues loadMockDataInstead()
+{
+  structImuValues mockImuValues;
+
+  // Vertical, untouched
+  // mockImuValues.ax = 6241;
+  // mockImuValues.ay = -15578;
+  // mockImuValues.az = 707;
+
+  // mockImuValues.gx = 6251;
+  // mockImuValues.gy = -15567;
+  // mockImuValues.gz = 740;
+
+  // bent left 90, should make dot go forwards
+  // mockImuValues.ax = -14657;
+  // mockImuValues.ay = -3578;
+  // mockImuValues.az = 5921;
+
+  // mockImuValues.gx = -62;
+  // mockImuValues.gy = 139;
+  // mockImuValues.gz = -352;
+
+  // bent right 90, should make dot go backwards
+  // mockImuValues.ax = 14775;
+  // mockImuValues.ay = 5880;
+  // mockImuValues.az = -4572;
+
+  // mockImuValues.gx = 14775;
+  // mockImuValues.gy = 5880;
+  // mockImuValues.gz = -4572;  
+
+  return mockImuValues;
 }
 
 structImuValues mapRawImuValues(structImuValues rawImuValues)
@@ -172,7 +213,7 @@ void setWobblerJoystickInputFromPedestalData(structImuValues mappedImuValues)
 
   int g;
 
-  // pick which accelerometer axis to use
+  // pick which gyro axis to use
   if (JOYSTICK_ORIENTATION == 0)
   {
     g = mappedImuValues.gx;
@@ -215,40 +256,6 @@ void setWobblerJoystickInputFromPedestalData(structImuValues mappedImuValues)
   pedestalData.joystickPeakWobble = abs(MPUWobbleSamples.getHighest());
 }
 
-structImuValues loadMockDataInstead()
-{
-  structImuValues mockImuValues;
-
-  // Vertical, untouched
-  mockImuValues.ax = 6241;
-  mockImuValues.ay = -15578;
-  mockImuValues.az = 707;
-
-  mockImuValues.gx = 6251;
-  mockImuValues.gy = -15567;
-  mockImuValues.gz = 740;
-
-  // bent left 90, should make dot go forwards
-  // mockImuValues.ax = -14657;
-  // mockImuValues.ay = -3578;
-  // mockImuValues.az = 5921;
-
-  // mockImuValues.gx = -62;
-  // mockImuValues.gy = 139;
-  // mockImuValues.gz = -352;
-
-  // bent right 90, should make dot go backwards
-  // mockImuValues.ax = 14775;
-  // mockImuValues.ay = 5880;
-  // mockImuValues.az = -4572;
-
-  // mockImuValues.gx = 14775;
-  // mockImuValues.gy = 5880;
-  // mockImuValues.gz = -4572;  
-
-  return mockImuValues;
-}
-
 void sendPedestalDataOverEspNow()
 {
   pedestalData.buttonPressed = !digitalRead(PIN_RESET_BUTTON);
@@ -284,8 +291,15 @@ void debugAccelerometerValuesReadout(structImuValues mappedImuValues)
     Serial.print(F("gZ: "));
     Serial.println(mappedImuValues.gz);
 
+    // Tilt, wobble
+    Serial.print(F("Averaged joystick tilt: "));
+    Serial.print(pedestalData.joystickAveragedTilt);
+    Serial.print(F(", "));
+
+    Serial.print(F("peak joystick wobble: "));
+    Serial.println(pedestalData.joystickPeakWobble);
+
     // Button readout
-    
     Serial.print(F("Button: "));
     Serial.println(digitalRead(PIN_RESET_BUTTON));
     
@@ -297,7 +311,6 @@ void debugAccelerometerValuesReadout(structImuValues mappedImuValues)
 
 void initializeEspNow()
 {
-  
   WiFi.mode(WIFI_STA);
 
   // Init ESP-NOW
