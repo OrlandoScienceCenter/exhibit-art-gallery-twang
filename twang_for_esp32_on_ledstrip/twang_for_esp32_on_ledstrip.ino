@@ -17,7 +17,7 @@
 #include "Conveyor.h"
 
 // ESP-NOW stuff
-#define DEBUG_MODE_ON       false
+//#define DEBUG_MODE_ON       // Comment this out for no debug serial messages
 
 typedef struct structEspNowPacket                                           // Structure example to send data, must match the sender structure
 {
@@ -72,7 +72,7 @@ iSin isin = iSin();
 // JOYSTICK
 #define JOYSTICK_ORIENTATION 1     // 0, 1 or 2 to set the angle of the joystick
 #define JOYSTICK_DIRECTION   0     // 0/1 to flip joystick direction
-#define ATTACK_THRESHOLD     30000 // The threshold that triggers an attack
+#define ATTACK_THRESHOLD     70 // The threshold that triggers an attack
 #define JOYSTICK_DEADZONE    5     // Angle to ignore
 
 int joystickTilt = 0;              // Stores the angle of the joystick
