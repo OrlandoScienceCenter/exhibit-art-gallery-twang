@@ -17,12 +17,12 @@
 #include "Conveyor.h"
 
 // ESP-NOW stuff
-//#define DEBUG_MODE_ON       // Comment this out for no debug serial messages
+#define DEBUG_MODE_ON       // Comment this out for no debug serial messages
 
 typedef struct structEspNowPacket                                           // Structure example to send data, must match the sender structure
 {
-  int joystickAveragedTilt;
-  int joystickPeakWobble;
+  int joystickAveragedTilt = 0;
+  int joystickPeakWobble = 0;
 
   bool buttonPressed = false;
 } 
@@ -51,7 +51,7 @@ bool resetButtonStatus = false;
 
 #define LED_COLOR_ORDER      BGR   
 #define BRIGHTNESS           150
-#define DIRECTION            1      // 0 = right to left, 1 = left to right
+#define DIRECTION            0      // 0 = right to left, 1 = left to right
 
 #define MIN_REDRAW_INTERVAL  16     // Min redraw interval (ms) 33 = 30fps / 16 = 63fps
 #define USE_GRAVITY          0      // 0/1 use gravity (LED strip going up wall)
@@ -70,10 +70,10 @@ long lastInputTime = 0;
 iSin isin = iSin();
 
 // JOYSTICK
-#define JOYSTICK_ORIENTATION 1     // 0, 1 or 2 to set the angle of the joystick
+#define JOYSTICK_ORIENTATION 0     // 0, 1 or 2 to set the angle of the joystick
 #define JOYSTICK_DIRECTION   0     // 0/1 to flip joystick direction
-#define ATTACK_THRESHOLD     70 // The threshold that triggers an attack
-#define JOYSTICK_DEADZONE    5     // Angle to ignore
+#define ATTACK_THRESHOLD     9000 // The threshold that triggers an attack
+#define JOYSTICK_DEADZONE    10     // Angle to ignore
 
 int joystickTilt = 0;              // Stores the angle of the joystick
 int joystickWobble = 0;            // Stores the max amount of acceleration (wobble)
@@ -121,11 +121,6 @@ Boss boss = Boss();
 
 CRGB leds[NUM_LEDS];
 
-RunningMedian MPUAngleSamples = RunningMedian(5);
-RunningMedian MPUWobbleSamples = RunningMedian(5);
-
-// char incomingSerialLine[50];
-// int readPos = 0;
 
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len)      // Callback function that will be executed when data is received
 {
@@ -190,9 +185,7 @@ void loop()
     */
 
     if (mm - previousMillis >= MIN_REDRAW_INTERVAL) {
-        
-        getInput();
-        
+                
         long frameTimer = mm;
         previousMillis = mm;
         
@@ -229,9 +222,12 @@ void loop()
             
             // If still not attacking, move!
             playerPosition += playerPositionModifier;
-            if(!attacking){
-                int moveAmount = (joystickWobble/6.0);
+            if(!attacking)
+            {
+                int moveAmount = (joystickTilt / 6.0);
+
                 if(DIRECTION) moveAmount = -moveAmount;
+                
                 moveAmount = constrain(moveAmount, -MAX_PLAYER_SPEED, MAX_PLAYER_SPEED);
                 playerPosition -= moveAmount;
                 if(playerPosition < 0) playerPosition = 0;
@@ -350,7 +346,7 @@ void debugPrintToSerialJoystickValues()
   Serial.println(packetLength);
 
   Serial.print(F("Tilt from pedestal: "));
-  Serial.print(pedestalData.joystickAveragedTilt);
+  Serial.print(joystickTilt);
 
   Serial.print(F(", peak recent wobble value from pedestal: "));
   Serial.print(pedestalData.joystickPeakWobble);
@@ -380,160 +376,6 @@ void toggleBuiltInLed()
   
   ledState = !ledState;
 }
-
-  // int incomingByte;
-  // int currentPos = 0;
-
-  // if (Serial3.available() > 0)
-  // {
-  //   delay(50);
-    
-  //   while (Serial3.available() > 0) 
-  //   {
-  //     incomingByte = Serial3.read();
-  
-  //     char incomingChar = char(incomingByte);
-  
-  //     incomingSerialLine[currentPos] = incomingChar;
-      
-  //     currentPos++;
-        
-  //     if (incomingChar == '.')
-  //     {
-  //       incomingSerialLine[currentPos] = '\0';
-        
-  //       break;
-  //     }
-  //   }
-
-
-  //   if (DEBUG_MODE_ON)
-  //   {
-  //     Serial.println();
-  //     Serial.println();
-  
-  //     Serial.print("incomingSerialLine: ");
-  //     Serial.println(incomingSerialLine);
-  //   }
-     
-  //   setJoystickTilt();
-  //   setJoystickWobble();
-
-  //   for (int i = 0; i < sizeof(incomingSerialLine); i++)
-  //   {
-  //     incomingSerialLine[i] = '\0';
-  //   }
-  //} 
-// }
-
-// void setJoystickTilt()
-// {
-//     char tiltString[50];
-
-//     int tiltStringCheckPos = 0;
-
-//     int tiltStringSavePos = 0;
-  
-//     while (char(incomingSerialLine[tiltStringCheckPos]) != 't')
-//     {
-//       tiltStringCheckPos++;
-//     }
-    
-//     tiltStringCheckPos++;
-
-
-//     if (DEBUG_MODE_ON)
-//     {
-//       Serial.print("First char is: ");
-//       Serial.println(incomingSerialLine[tiltStringCheckPos]);
-//     }
-    
-//     // Now wobbleStringCheckPos should be at the letter after 't'
-//     while (isDigit(incomingSerialLine[tiltStringCheckPos]))
-//     {
-      
-//       if (DEBUG_MODE_ON)
-//       {
-//         Serial.print("Adding: ");
-//         Serial.print(incomingSerialLine[tiltStringCheckPos]);
-//       }
-      
-//       tiltString[tiltStringSavePos] = incomingSerialLine[tiltStringCheckPos];
-      
-//       tiltStringSavePos++;
-//       tiltStringCheckPos++;
-//     }
-    
-//     tiltStringSavePos++;
-//     tiltString[tiltStringSavePos] = '\0';
-
-// //    Serial.print("TiltString: ");
-// //    Serial.println(tiltString);
-
-//     joystickTilt = atoi(tiltString);
-
-
-//     if (DEBUG_MODE_ON)
-//     {
-//       Serial.print("joystickTilt: ");
-//       Serial.println(joystickTilt);
-//     }
-// }
-
-// void setJoystickWobble()
-// {
-//     char wobbleString[50];
-
-//     int wobbleStringCheckPos = 0;
-
-//     int wobbleStringSavePos = 0;
-  
-//     while (char(incomingSerialLine[wobbleStringCheckPos]) != 'w')
-//     {
-//       wobbleStringCheckPos++;
-//     }
-    
-//     wobbleStringCheckPos++;
-
-
-//     if (DEBUG_MODE_ON)
-//     {
-//       Serial.print("First char is: ");
-//       Serial.println(incomingSerialLine[wobbleStringCheckPos]);
-//     }
-    
-//     // Now wobbleStringCheckPos should be at the letter after 't'
-//     while (isDigit(incomingSerialLine[wobbleStringCheckPos]))
-//     {
-      
-//       if (DEBUG_MODE_ON)
-//       {
-//         Serial.print("Adding: ");
-//         Serial.print(incomingSerialLine[wobbleStringCheckPos]);
-//       }
-      
-//       wobbleString[wobbleStringSavePos] = incomingSerialLine[wobbleStringCheckPos];
-      
-//       wobbleStringSavePos++;
-//       wobbleStringCheckPos++;
-//     }
-    
-//     wobbleStringSavePos++;
-//     wobbleString[wobbleStringSavePos] = '\0';
-
-// //    Serial.print("wobbleString: ");
-// //    Serial.println(wobbleString);
-
-//     joystickWobble = atoi(wobbleString);
-
-
-//     if (DEBUG_MODE_ON)
-//     {
-//       Serial.print("joystickwobble: ");
-//       Serial.println(joystickWobble);
-//     }
-  
-// }
 
 
 // ---------------------------------
@@ -938,54 +780,6 @@ void screenSaverTick(){
         }
     }
 }
-
-// ---------------------------------
-// ----------- JOYSTICK ------------
-// ---------------------------------
-void getInput(){
-
-  char joystickTiltString[6];
-
-  int characterPosition = 0;
-
-  while (Serial1.available() > 0)           //Wait for user input
-  { 
-    int byteReceived;
-
-delay(15);
-    
-    byteReceived = Serial1.read();       //Read user input and hold it in a variable
-
-    Serial.println("Next char: ");
-    Serial.println(char(byteReceived));
-    Serial.println("int: ");
-    Serial.println(byteReceived);
-
-//    if (byteReceived == '\n') {
-//        joystickTiltString[characterPosition] = '\0';
-//        break;
-//    } 
-//    
-//    joystickTiltString[characterPosition] = char(byteReceived);   //Print the character value of user input 
-//
-//    characterPosition++;
-  }
-
-//  Serial.print(F("Raw val read: "));
-//  Serial.println(joystickTiltString);
-//    
-//  joystickTilt = atoi(joystickTiltString);
-//
-//  Serial.print(F("Got joystickTilt vlaue of: "));
-//  Serial.println(joystickTilt);
-  
-  if(JOYSTICK_DIRECTION == 1) {
-      joystickTilt = 0-joystickTilt;
-  }
-  
-  //joystickWobble = abs(MPUWobbleSamples.getHighest());
-}
-
 
 // ---------------------------------
 // -------------- SFX --------------
