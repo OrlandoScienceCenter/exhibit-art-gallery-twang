@@ -3,7 +3,6 @@
 * Accelerometer data server ESP8266: B4:E6:2D:53:D5:79
 * ESP8266 that communicates with the trinket that drives the LED strip: A0:20:A6:18:4E:3F
 
-
 # Wiring:
 
 BMI160 SCL = Wemos pin D1
@@ -37,6 +36,9 @@ twang4809_teensey_accel_client_with_ledstrip_in_progress
 
 * In progress code. Do not use unless your name is David.
 
+# Libraries
+
+https://github.com/hanyazou/BMI160-Arduino
 
 # Accelerometer Values:
 
