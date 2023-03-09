@@ -6,15 +6,15 @@ Sender in pedestal:  40:22:D8:EA:4B:E8
 
 # Wiring:
 
-BMI160 SCL = Wemos pin D1  grn
-BMI160 SDA = Wemos pin D2  grn/wht
-BMI160 3v3 = Wemos pin 3v3 orng
-BMI160 GND = Wemos pin G   orng/wht
+* BMI160 SCL = Wemos pin D1  grn
+* BMI160 SDA = Wemos pin D2  grn/wht
+* BMI160 3v3 = Wemos pin 3v3 orng
+* BMI160 GND = Wemos pin G   orng/wht
 
-BMI160 SCL = ESP32 pin D22 (Green wire on breadboard)  [Green Solid from accelerometer]
-BMI160 SDA = ESP32 pin D21 (Blue wire on breadboard)   [Green/White from accelerometer]
-BMI160 3v3 = ESP32 pin 3v3 (Yellow wire on breadboard) [Orange from accelerometer]
-BMI160 GND = ESP32 pin Gnd (Black wire on breadboard)  [Orange/White from accelerometer]
+* BMI160 SCL = ESP32 pin D22 (Green wire on breadboard)  [Green Solid from accelerometer]
+* BMI160 SDA = ESP32 pin D21 (Blue wire on breadboard)   [Green/White from accelerometer]
+* BMI160 3v3 = ESP32 pin 3v3 (Yellow wire on breadboard) [Orange from accelerometer]
+* BMI160 GND = ESP32 pin Gnd (Black wire on breadboard)  [Orange/White from accelerometer]
 
 # Folders
 
