@@ -5,15 +5,14 @@
 #include <BMI160Gen.h>
  
 //#define TEST_MODE_ON                                                    // Uncomment this to mock IMU values and disable ESP-NOW packet send
-#define DEBUG_MODE_ON                                                     // Uncomment this to enable serial and debug printouts
+//#define DEBUG_MODE_ON                                                     // Uncomment this to enable serial and debug printouts
 //#define DEBUG_NETWORK_ON                                                // Uncomment this to enable printouts about packet send status with ESP-NOW
 
 #define PIN_RESET_BUTTON 23
 
 // JOYSTICK
-#define JOYSTICK_ORIENTATION 0          // 0, 1 or 2 to set the angle of the joystick. 0 is ax and gx values, 1 is ay and gy, and 2 is az and gz
 #define JOYSTICK_DIRECTION   0          // 0/1 to flip joystick direction
-#define JOYSTICK_DEADZONE    5          // Angle to ignore
+#define JOYSTICK_DEADZONE    10          // Angle to ignore
 
 #define ACCELEROMETER_I2C_ADDRESS 0x69
 
@@ -50,7 +49,7 @@ structEspNowPacket pedestalData;                               // Create a struc
 bool resetButtonStatus = false;
 
 unsigned long lastTime = 0;  
-unsigned long timerDelay = 50;                             // send readings timer
+unsigned long timerDelay = 200;                             // send readings timer
 
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)      // Callback when data is sent
 {
@@ -166,18 +165,18 @@ structImuValues loadMockDataInstead()
 
 structImuValues mapRawImuValues(structImuValues rawImuValues)
 {
-  rawImuValues.ax = map(rawImuValues.ax, -17000, 17000, -90, 90);
-  rawImuValues.ay = map(rawImuValues.ay, -17000, 17000, -90, 90);
-  rawImuValues.az = map(rawImuValues.az, -17000, 17000, -90, 90);
+  rawImuValues.ax = map(rawImuValues.ax, -17000, 17000, -110, 65);
+  //rawImuValues.ay = map(rawImuValues.ay, -17000, 17000, -90, 90);
+  //rawImuValues.az = map(rawImuValues.az, -17000, 17000, -90, 90);
 
   // These will obviously override the above rows
   // rawImuValues.ax = 0;
   // rawImuValues.ay = 0;
   // rawImuValues.az = 0;
   
-  rawImuValues.gx = map(rawImuValues.gx, -17000, 17000, -90, 90);
-  rawImuValues.gy = map(rawImuValues.gy, -17000, 17000, -90, 90);
-  rawImuValues.gz = map(rawImuValues.gz, -17000, 17000, -90, 90);
+  //rawImuValues.gx = map(rawImuValues.gx, -17000, 17000, -90, 90);
+  //rawImuValues.gy = map(rawImuValues.gy, -17000, 17000, -90, 90);
+  //rawImuValues.gz = map(rawImuValues.gz, -17000, 17000, -90, 90);
 
   // These will obviously override the above rows
   // rawImuValues.gx = 0;
@@ -200,37 +199,8 @@ void setWobblerJoystickInputFromPedestalData(structImuValues mappedImuValues)
   // int a = (JOYSTICK_ORIENTATION == 0 ? pedestalData.ax : (JOYSTICK_ORIENTATION == 1 ? pedestalData.ay : pedestalData.az)) / 166;
   // int g = (JOYSTICK_ORIENTATION == 0 ? pedestalData.gx : (JOYSTICK_ORIENTATION == 1 ? pedestalData.gy : pedestalData.gz));
 
-  int a;
-
-  // pick which accelerometer axis to use
-  if (JOYSTICK_ORIENTATION == 0)
-  {
-    a = mappedImuValues.ax;
-  }
-  else if (JOYSTICK_ORIENTATION == 1)
-  {
-    a = mappedImuValues.ay;
-  }
-  else
-  {
-    a = mappedImuValues.az;
-  }
-
-  int g;
-
-  // pick which gyro axis to use
-  if (JOYSTICK_ORIENTATION == 0)
-  {
-    g = mappedImuValues.gx;
-  }
-  else if (JOYSTICK_ORIENTATION == 1)
-  {
-    g = mappedImuValues.gy;
-  }
-  else
-  {
-    g = mappedImuValues.gz;
-  }
+  int a = mappedImuValues.ax;
+  int g = mappedImuValues.gx;
 
   // check if joystick is vertical
   if (abs(a) < JOYSTICK_DEADZONE)
@@ -251,12 +221,7 @@ void setWobblerJoystickInputFromPedestalData(structImuValues mappedImuValues)
   MPUAngleSamples.add(a);
   MPUWobbleSamples.add(g);
   
-  pedestalData.joystickAveragedTilt = MPUAngleSamples.getMedian();
-  
-  if (JOYSTICK_DIRECTION == 1) 
-  {
-    pedestalData.joystickAveragedTilt = 0-pedestalData.joystickAveragedTilt;
-  }
+  pedestalData.joystickAveragedTilt = MPUAngleSamples.getAverage();
   
   pedestalData.joystickPeakWobble = abs(MPUWobbleSamples.getHighest());
 }
@@ -277,12 +242,12 @@ void debugAccelerometerValuesReadout(structImuValues mappedImuValues)
     Serial.print(mappedImuValues.ax);
     Serial.print(F(",\t"));
 
-    Serial.print(F("aY: "));
-    Serial.print(mappedImuValues.ay);
-    Serial.print(F(",\t"));
+    // Serial.print(F("aY: "));
+    // Serial.print(mappedImuValues.ay);
+    // Serial.print(F(",\t"));
 
-    Serial.print(F("aZ: "));
-    Serial.print(mappedImuValues.az);
+    // Serial.print(F("aZ: "));
+    // Serial.print(mappedImuValues.az);
 
     Serial.print(F("\t-\t"));
 
@@ -291,12 +256,12 @@ void debugAccelerometerValuesReadout(structImuValues mappedImuValues)
     Serial.print(mappedImuValues.gx);
     Serial.print(F(",\t"));
 
-    Serial.print(F("gY: "));
-    Serial.print(mappedImuValues.gy);
-    Serial.print(F(",\t"));
+    // Serial.print(F("gY: "));
+    // Serial.print(mappedImuValues.gy);
+    // Serial.print(F(",\t"));
 
-    Serial.print(F("gZ: "));
-    Serial.print(mappedImuValues.gz);
+    // Serial.print(F("gZ: "));
+    // Serial.print(mappedImuValues.gz);
     
     Serial.print(F("\t-\t"));
 
