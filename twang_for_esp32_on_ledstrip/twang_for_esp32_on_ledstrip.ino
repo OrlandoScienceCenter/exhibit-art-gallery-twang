@@ -73,7 +73,7 @@ iSin isin = iSin();
 #define JOYSTICK_ORIENTATION 0     // 0, 1 or 2 to set the angle of the joystick
 #define JOYSTICK_DIRECTION   0     // 0/1 to flip joystick direction
 #define ATTACK_THRESHOLD     9000 // The threshold that triggers an attack
-#define JOYSTICK_DEADZONE    10     // Angle to ignore
+#define JOYSTICK_DEADZONE    12     // Angle to ignore
 
 int joystickTilt = 0;              // Stores the angle of the joystick
 int joystickWobble = 0;            // Stores the max amount of acceleration (wobble)
@@ -93,7 +93,7 @@ int playerPosition;                // Stores the player position
 int playerPositionModifier;        // +/- adjustment to player position
 bool playerAlive;
 long killTime;
-int lives = 1;
+int lives = 2;
 
 // POOLS
 int lifeLEDs[3] = {52, 50, 40};
@@ -191,7 +191,7 @@ void loop()
         
         if (resetButtonStatus)
         {
-          stage = "DEAD";
+          gameOver();
           
           resetButtonStatus = false;
         }
@@ -515,7 +515,7 @@ void levelComplete(){
     stageStartTime = millis();
     stage = "WIN";
     if(levelNumber == LEVEL_COUNT) stage = "COMPLETE";
-    lives = 3;
+    lives = 2;
     updateLives();
 }
 
