@@ -1,8 +1,7 @@
 # Board mac addresses
  
-Attached to LED strip: 40:22:D8:EA:1F:98
-Sender in pedestal:  40:22:D8:EA:4B:E8
-
+* Attached to LED strip: 40:22:D8:EA:1F:98
+* Sender in pedestal:  40:22:D8:EA:4B:E8
 
 # Wiring:
 
@@ -15,6 +14,8 @@ Sender in pedestal:  40:22:D8:EA:4B:E8
 * BMI160 SDA = ESP32 pin D21 (Blue wire on breadboard)   [Green/White from accelerometer]
 * BMI160 3v3 = ESP32 pin 3v3 (Yellow wire on breadboard) [Orange from accelerometer]
 * BMI160 GND = ESP32 pin Gnd (Black wire on breadboard)  [Orange/White from accelerometer]
+
+
 
 # Folders
 
