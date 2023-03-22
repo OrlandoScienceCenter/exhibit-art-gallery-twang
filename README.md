@@ -16,12 +16,10 @@ BMI160
 
 ## IMU Wiring
 
+* BMI160 GND = ESP32 pin Gnd (Black wire on breadboard)  [Orange/White from accelerometer]
 * BMI160 SCL = ESP32 pin D22 (Green wire on breadboard)  [Green Solid from accelerometer]
 * BMI160 SDA = ESP32 pin D21 (Blue wire on breadboard)   [Green/White from accelerometer]
 * BMI160 3v3 = ESP32 pin 3v3 (Yellow wire on breadboard) [Orange from accelerometer]
-* BMI160 GND = ESP32 pin Gnd (Black wire on breadboard)  [Orange/White from accelerometer]
-
-
 
 # Folders
 
@@ -43,3 +41,9 @@ get_esp_mac_address
 * https://github.com/hanyazou/BMI160-Arduino
 * https://github.com/RobTillaart/RunningMedian
 * https://github.com/FastLED/FastLED
+
+# Serial
+
+All boards programmed by David are 115200 baud in the Serial Monitor in the Arduino IDE
+
+The ESP-32 (x2) in line wobbler need a USB A to C cable to connect to a computer. A USB C > C cable will not work.
